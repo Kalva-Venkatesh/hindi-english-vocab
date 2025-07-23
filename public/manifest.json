@@ -1,5 +1,5 @@
 {
-  "short_name": "English&hindi-vocab",
+  "short_name": "Eng&hin-vocab",
   "name": "English and hindi learning application",
   "icons": [
     {
@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
