@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BookOpen, Languages, RefreshCw } from 'lucide-react';
+import { BookOpen, Languages, RefreshCw, Volume2 } from 'lucide-react';
 
 // --- CSS Styles ---
 const Styles = () => (
@@ -138,6 +138,12 @@ const Styles = () => (
     }
 
     /* Vocabulary Specific */
+    .item-title-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
     .item-title {
       font-size: 2rem;
       font-weight: bold;
@@ -164,6 +170,11 @@ const Styles = () => (
       padding-left: 1rem;
       border-left: 4px solid #93c5fd;
     }
+    .definition-text-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
     .definition-text { color: #374151; }
     .example-text {
       font-size: 0.875rem;
@@ -186,11 +197,17 @@ const Styles = () => (
     .translation-display {
         text-align: center;
     }
+    .main-hindi-word-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
     .main-hindi-word {
         font-size: 3rem;
         font-weight: bold;
         color: var(--primary-orange);
-        margin-bottom: 1rem;
     }
     .meaning-grid {
         display: grid;
@@ -216,6 +233,12 @@ const Styles = () => (
         color: var(--medium-gray);
         margin-bottom: 0.25rem;
     }
+    .meaning-text-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
     .meaning-text {
         font-size: 1.25rem;
         font-weight: 500;
@@ -240,6 +263,22 @@ const Styles = () => (
         color: var(--medium-gray);
         font-style: italic;
     }
+
+    /* Speaker Button */
+    .speak-button {
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        cursor: pointer;
+        color: var(--medium-gray);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .speak-button:hover {
+        color: var(--dark-gray);
+    }
+
 
     /* Footer */
     .footer {
@@ -320,6 +359,26 @@ const Header = ({ activeTab, setActiveTab }) => {
   );
 };
 
+// Reusable Speak Button Component
+const SpeakButton = ({ text, lang }) => {
+    const handleSpeak = (e) => {
+        e.stopPropagation(); // Prevent card clicks or other parent events
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Sorry, your browser doesn't support text-to-speech.");
+        }
+    };
+
+    return (
+        <button onClick={handleSpeak} className="speak-button" title={`Speak "${text}"`}>
+            <Volume2 size={20} />
+        </button>
+    );
+};
+
 const HindiVocabulary = () => {
   const [wordData, setWordData] = useState({ hindi: '', english: '', telugu: '', example: '' });
   const [loading, setLoading] = useState(true);
@@ -329,7 +388,7 @@ const HindiVocabulary = () => {
     setLoading(true);
     setError(null);
     
-    for (let i = 0; i < 5; i++) { // Increased retry limit for this complex fetch
+    for (let i = 0; i < 5; i++) {
         try {
             const randomWordResponse = await fetch('https://random-word-api.herokuapp.com/word?number=1');
             if (!randomWordResponse.ok) continue;
@@ -396,15 +455,24 @@ const HindiVocabulary = () => {
         {error && <div className="error-text">{error}</div>}
         {!loading && !error && wordData.hindi && (
             <div className="translation-display">
-                <h3 className="main-hindi-word">{wordData.hindi}</h3>
+                <div className="main-hindi-word-container">
+                    <h3 className="main-hindi-word">{wordData.hindi}</h3>
+                    <SpeakButton text={wordData.hindi} lang="hi-IN" />
+                </div>
                 <div className="meaning-grid">
                     <div className="meaning-card english">
                         <p className="meaning-label">English Meaning</p>
-                        <p className="meaning-text english-text">{wordData.english}</p>
+                        <div className="meaning-text-container">
+                            <p className="meaning-text english-text">{wordData.english}</p>
+                            <SpeakButton text={wordData.english} lang="en-US" />
+                        </div>
                     </div>
                     <div className="meaning-card telugu">
                         <p className="meaning-label">Telugu Meaning</p>
-                        <p className="meaning-text telugu-text">{wordData.telugu}</p>
+                        <div className="meaning-text-container">
+                            <p className="meaning-text telugu-text">{wordData.telugu}</p>
+                            <SpeakButton text={wordData.telugu} lang="te-IN" />
+                        </div>
                     </div>
                 </div>
                 <div className="example-card">
@@ -462,14 +530,20 @@ const EnglishVocabulary = () => {
             {error && <div className="error-text">{error}</div>}
             {wordData && (
                 <div>
-                    <h3 className="item-title blue">{wordData.word}</h3>
+                    <div className="item-title-container">
+                        <h3 className="item-title blue">{wordData.word}</h3>
+                        <SpeakButton text={wordData.word} lang="en-US" />
+                    </div>
                     <p className="phonetic">{wordData.phonetic}</p>
                     {wordData.meanings.map((meaning, index) => (
                         <div key={index} className="meaning-block">
                             <h4 className="part-of-speech">{meaning.partOfSpeech}</h4>
                             {meaning.definitions.map((def, i) => (
                                 <div key={i} className="definition-block">
-                                    <p className="definition-text">{def.definition}</p>
+                                    <div className="definition-text-container">
+                                        <p className="definition-text">{def.definition}</p>
+                                        <SpeakButton text={def.definition} lang="en-US" />
+                                    </div>
                                     {def.example && <p className="example-text">e.g., "{def.example}"</p>}
                                 </div>
                             ))}
